@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+openai
+line-bot-sdk
+python-multipart

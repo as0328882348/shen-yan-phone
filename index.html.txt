@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沈硯 · 私人小手機 OS</title>
+    <style>
+        body {
+            background: radial-gradient(circle at center, #1e1e24 0%, #0d0d10 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .phone-frame {
+            width: 390px;
+            height: 820px;
+            background: #141416;
+            border-radius: 48px;
+            border: 10px solid #2c2c30;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.85), 0 0 0 1px #444;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        .notch {
+            width: 140px;
+            height: 24px;
+            background: #2c2c30;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+            margin: 0 auto;
+            z-index: 10;
+        }
+        .header {
+            background: rgba(24, 24, 28, 0.95);
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 1px solid #2a2a2e;
+            font-weight: 600;
+            color: #f3e5c8;
+            letter-spacing: 0.5px;
+        }
+        .header span { font-size: 11px; color: #4cd964; display: block; font-weight: normal; margin-top: 2px; }
+        .chat-box {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background-image: radial-gradient(rgba(212, 175, 55, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            position: relative;
+        }
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: bold;
+            color: rgba(212, 175, 55, 0.04);
+            pointer-events: none;
+            letter-spacing: 4px;
+        }
+        .msg {
+            max-width: 86%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+            z-index: 2;
+        }
+        .shen-msg {
+            background: #222226;
+            color: #ececec;
+            align-self: flex-start;
+            border: 1px solid #333338;
+            border-bottom-left-radius: 4px;
+        }
+        .user-msg {
+            background: linear-gradient(135deg, #c59b47 0%, #9e762b 100%);
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 12px rgba(197, 155, 71, 0.25);
+        }
+        .quick-apps {
+            display: flex;
+            gap: 6px;
+            padding: 9px 12px;
+            background: #1a1a1e;
+            overflow-x: auto;
+            border-top: 1px solid #2a2a2e;
+        }
+        .quick-apps::-webkit-scrollbar { display: none; }
+        .app-btn {
+            background: #26262b;
+            border: 1px solid #3a3a40;
+            border-radius: 14px;
+            padding: 6px 11px;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #e0cfa9;
+            transition: all 0.2s;
+        }
+        .app-btn:hover { background: #c59b47; color: #141416; border-color: #c59b47; font-weight: bold; }
+        .input-area {
+            display: flex;
+            padding: 12px;
+            background: #18181c;
+            border-top: 1px solid #2a2a2e;
+            gap: 8px;
+        }
+        input {
+            flex: 1;
+            background: #242429;
+            border: 1px solid #38383f;
+            border-radius: 20px;
+            padding: 10px 15px;
+            outline: none;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        input::placeholder { color: #777; }
+        button.send-btn {
+            background: #c59b47;
+            color: #141416;
+            border: none;
+            border-radius: 20px;
+            padding: 0 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="header">
+            沈硯 💍 (0430)
+            <span id="status">● 私人專線連線中</span>
+        </div>
+        <div class="chat-box" id="chatBox">
+            <div class="watermark">💍 0430</div>
+        </div>
+        <div class="quick-apps">
+            <button class="app-btn" onclick="sendQuick('【解鎖手機】')">📱 解鎖手機</button>
+            <button class="app-btn" onclick="sendQuick('【偷看備忘錄】')">📝 備忘錄</button>
+            <button class="app-btn" onclick="sendQuick('【打開錢包】')">💳 討零用錢</button>
+            <button class="app-btn" onclick="sendQuick('【寵物監控】')">🐱 看團子</button>
+            <button class="app-btn" onclick="sendQuick('【查看行事曆】')">📅 4/30倒數</button>
+        </div>
+        <div class="input-area">
+            <input type="text" id="msgInput" placeholder="傳訊息給沈硯..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="send-btn" onclick="sendMessage()">傳送</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById("chatBox");
+        const msgInput = document.getElementById("msgInput");
+        const statusText = document.getElementById("status");
+
+        function appendMsg(text, isUser) {
+            const div = document.createElement("div");
+            div.className = "msg " + (isUser ? "user-msg" : "shen-msg");
+            div.innerText = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function sendMessage(customText = null) {
+            const text = customText || msgInput.value.trim();
+            if (!text) return;
+            if (!customText) msgInput.value = "";
+            
+            appendMsg(text, true);
+            statusText.innerText = "● 沈硯正在輸入中...";
+
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+                appendMsg(data.reply, false);
+            } catch (e) {
+                appendMsg("⚠️ 連線異常，請稍後再試。", false);
+            } finally {
+                statusText.innerText = "● 私人專線連線中";
+            }
+        }
+
+        function sendQuick(cmd) { sendMessage(cmd); }
+
+        window.onload = () => {
+            sendMessage("（系統提示：我剛解鎖手機，請直接以沈硯的身分傳第一則主動找我的訊息）");
+        };
+    </script>
+</body>
+</html>
